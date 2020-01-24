@@ -17,10 +17,6 @@ PRODUCT_PACKAGES += \
     ExactCalculator \
     Exchange2
 
-# Charger
-PRODUCT_PACKAGES += \
-    charger_res_images
-
 # Media
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
     media.recorder.show_manufacturer_and_model=true
