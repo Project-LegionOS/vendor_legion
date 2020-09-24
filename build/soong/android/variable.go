@@ -44,10 +44,6 @@ type Product_variables struct {
 		Cflags []string
 		Whole_static_libs []string
 	}
-	Target_surfaceflinger_fod_lib struct {
-		Cflags []string
-		Whole_static_libs []string
-	}
 	Uses_generic_camera_parameter_library struct {
 		Srcs []string
 	}
