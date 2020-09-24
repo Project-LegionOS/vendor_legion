@@ -23,7 +23,6 @@ PRODUCT_PACKAGES += \
     Stk \
     Snap \
     ThemePicker \
-    LegionThemesStub \
     WallpaperPicker2
 
 # World APN list
