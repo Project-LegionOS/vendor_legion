@@ -31,17 +31,4 @@ include $(BUILD_PREBUILT)
 # if some modules are built directly from this directory (not subdirectories),
 # their rules should be written here.
 
-#Pixel Theme
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := PixelThemesStub2019
-LOCAL_MODULE_TAGS := optional
-LOCAL_SRC_FILES := app/$(LOCAL_MODULE).apk
-LOCAL_CERTIFICATE := PRESIGNED
-LOCAL_MODULE_CLASS := APPS
-LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
-LOCAL_DEX_PREOPT := false
-LOCAL_PRODUCT_MODULE := true
-include $(BUILD_PREBUILT)
-
 include $(call all-makefiles-under,$(LOCAL_PATH))

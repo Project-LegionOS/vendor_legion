@@ -20,7 +20,6 @@ PRODUCT_PACKAGES += \
     LatinIME \
     Launcher3QuickStep \
     messaging \
-    PixelThemesStub2019 \
     Stk \
     Snap \
     ThemePicker \
