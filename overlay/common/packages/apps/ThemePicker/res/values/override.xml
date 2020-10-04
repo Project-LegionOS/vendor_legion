@@ -10,10 +10,9 @@
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
      limitations under the License.
---> <resources>
-    <string name="themes_stub_package" translatable="false">com.android.customization</string>
-
-    <string name="clocks_stub_package" translatable="false">com.android.customization</string>
+-->
+<resources>
+    <string name="clocks_stub_package" translatable="false">org.legionos.customization</string>
 
     <string name="launcher_overlayable_package" translatable="false">com.android.launcher3</string>
 
