@@ -23,8 +23,9 @@ PRODUCT_PACKAGES += \
     Stk \
     Snap \
     ThemePicker \
-    LegionThemesStub \
-    WallpaperPicker2
+    PixelThemesStub2019 \
+    MatchmakerPrebuilt \
+    WallpaperPickerGoogle
 
 # World APN list
 PRODUCT_PACKAGES += \

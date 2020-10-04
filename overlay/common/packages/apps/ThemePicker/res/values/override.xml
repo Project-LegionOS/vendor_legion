@@ -12,7 +12,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="clocks_stub_package" translatable="false">org.legionos.customization</string>
+    <string name="themes_stub_package" translatable="false">org.legionos.customization</string>
 
     <string name="launcher_overlayable_package" translatable="false">com.android.launcher3</string>
 
