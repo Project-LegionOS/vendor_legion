@@ -24,8 +24,7 @@ PRODUCT_PACKAGES += \
     Snap \
     ThemePicker \
     PixelThemesStub2019 \
-    MatchmakerPrebuilt \
-    WallpaperPickerGoogle
+    MatchmakerPrebuilt
 
 # World APN list
 PRODUCT_PACKAGES += \
