@@ -1,3 +1,3 @@
 ifeq ($(WITH_GAPPS), true)
-include vendor/google/gms/config.mk
+include vendor/gapps/common/common-vendor.mk
 endif
