@@ -168,3 +168,6 @@ DEVICE_PACKAGE_OVERLAYS += vendor/legion/overlay/common
 
 # Gapps
 -include vendor/legion/config/gapps.mk
+
+# Include Vendor Parts
+-include vendor/LegionParts/parts.mk
