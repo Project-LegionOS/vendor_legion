@@ -19,6 +19,3 @@ include vendor/legion/build/target/product/legion_generic_target.mk
 TARGET_USES_64_BIT_BINDER := true
 
 PRODUCT_NAME := legion_x86
-
-PRODUCT_SDK_ADDON_NAME := legion
-PRODUCT_SDK_ADDON_SYS_IMG_SOURCE_PROP := $(LOCAL_PATH)/source.properties
