@@ -88,6 +88,10 @@ PRODUCT_RESTRICT_VENDOR_FILES := false
 PRODUCT_PACKAGES += \
     Terminal
 
+# Themes
+PRODUCT_PACKAGES += \
+    ThemePicker
+
 # Extra tools in Legion
 PRODUCT_PACKAGES += \
     7z \
