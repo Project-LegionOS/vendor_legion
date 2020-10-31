@@ -160,8 +160,11 @@ DEVICE_PACKAGE_OVERLAYS += vendor/legion/overlay/common
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/legion/config/partner_gms.mk
 
-#Versioning
-include vendor/legion/config/version.mk
+# Versioning
+-include vendor/legion/config/version.mk
 
 # Bootanimation
 -include vendor/legion/bootanimation/bootanimation.mk
+
+# Gapps
+-include vendor/legion/config/gapps.mk
