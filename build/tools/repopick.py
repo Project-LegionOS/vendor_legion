@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Copyright (C) 2013-15 The CyanogenMod Project
-#           (C) 2017    The LineageOS Project
+#           (C) 2019    LegionOS
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -153,12 +153,12 @@ def fetch_query(remote_url, query):
 
 
 if __name__ == '__main__':
-    # Default to LineageOS Gerrit
-    default_gerrit = 'https://review.lineageos.org'
+    # Default to LegionOS Gerrit
+    default_gerrit = 'https://review.msmlegion.org'
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=textwrap.dedent('''\
         repopick.py is a utility to simplify the process of cherry picking
-        patches from LineageOS's Gerrit instance (or any gerrit instance of your choosing)
+        patches from LegionOS Gerrit instance (or any gerrit instance of your choosing)
 
         Given a list of change numbers, repopick will cd into the project path
         and cherry pick the latest patch available.
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--force', action='store_true', help='force cherry pick even if change is closed')
     parser.add_argument('-p', '--pull', action='store_true', help='execute pull instead of cherry-pick')
     parser.add_argument('-P', '--path', metavar='', help='use the specified path for the change')
-    parser.add_argument('-t', '--topic', metavar='', help='pick all commits from a specified topic')
+    parser.add_argument('-t', '--topic', nargs='*', help='pick all commits from the specified topics')
     parser.add_argument('-Q', '--query', metavar='', help='pick all commits using the specified query')
     parser.add_argument('-g', '--gerrit', default=default_gerrit,
                         metavar='', help='Gerrit Instance to use. Form proto://[user@]host[:port]')
@@ -292,8 +292,13 @@ if __name__ == '__main__':
             return cmp(review_a['number'], review_b['number'])
 
     if args.topic:
-        reviews = fetch_query(args.gerrit, 'topic:{0}'.format(args.topic))
-        change_numbers = [str(r['number']) for r in sorted(reviews, key=cmp_to_key(cmp_reviews))]
+        for t in args.topic:
+            # Store current topic to process for change_numbers
+            topic = fetch_query(args.gerrit, 'status:open+topic:{0}'.format(t))
+            # Append topic to reviews, for later reference
+            reviews += topic
+            # Cycle through the current topic to get the change numbers
+            change_numbers += sorted([str(r['number']) for r in topic], key=int)
     if args.query:
         reviews = fetch_query(args.gerrit, args.query)
         change_numbers = [str(r['number']) for r in sorted(reviews, key=cmp_to_key(cmp_reviews))]
@@ -339,7 +344,7 @@ if __name__ == '__main__':
 
         mergables.append({
             'subject': review['subject'],
-            'project': review['project'],
+            'project': review['project'].split('/')[1],
             'branch': review['branch'],
             'change_id': review['change_id'],
             'change_number': review['number'],
@@ -437,9 +442,9 @@ if __name__ == '__main__':
                 print('Trying to fetch the change from GitHub')
 
             if args.pull:
-                cmd = ['git pull --no-edit github', item['fetch'][method]['ref']]
+                cmd = ['git pull --no-edit legion', item['fetch'][method]['ref']]
             else:
-                cmd = ['git fetch github', item['fetch'][method]['ref']]
+                cmd = ['git fetch legion', item['fetch'][method]['ref']]
             if args.quiet:
                 cmd.append('--quiet')
             else:

@@ -39,11 +39,11 @@ endif
 PRODUCT_COPY_FILES += \
     vendor/legion/config/permissions/backup.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/sysconfig/backup.xml
 
-# Lineage-specific broadcast actions whitelist
+# Legion-specific broadcast actions whitelist
 PRODUCT_COPY_FILES += \
     vendor/legion/config/permissions/legion-sysconfig.xml:$(TARGET_COPY_OUT_SYSTEM)/etc/sysconfig/legion-sysconfig.xml
 
-# Copy all Lineage-specific init rc files
+# Copy all Legion-specific init rc files
 $(foreach f,$(wildcard vendor/legion/prebuilt/common/etc/init/*.rc),\
 	$(eval PRODUCT_COPY_FILES += $(f):$(TARGET_COPY_OUT_SYSTEM)/etc/init/$(notdir $f)))
 
@@ -70,7 +70,7 @@ PRODUCT_SYSTEM_DEFAULT_PROPERTIES += \
 # Include AOSP audio files
 include vendor/legion/config/aosp_audio.mk
 
-# Include Lineage audio files
+# Include Legion audio files
 include vendor/legion/config/legion_audio.mk
 
 # Do not include art debug targets
@@ -88,7 +88,7 @@ PRODUCT_RESTRICT_VENDOR_FILES := false
 PRODUCT_PACKAGES += \
     Terminal
 
-# Extra tools in Lineage
+# Extra tools in Legion
 PRODUCT_PACKAGES += \
     7z \
     awk \

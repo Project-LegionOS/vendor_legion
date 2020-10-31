@@ -1,4 +1,4 @@
-# Inherit common mobile Lineage stuff
+# Inherit common mobile Legion stuff
 $(call inherit-product, vendor/legion/config/common.mk)
 
 # Default notification/alarm sounds
@@ -23,7 +23,7 @@ PRODUCT_PACKAGES += \
 
 # Customizations
 PRODUCT_PACKAGES += \
-    LineageNavigationBarNoHint \
+    LegionNavigationBarNoHint \
     NavigationBarMode2ButtonOverlay
 
 # Media

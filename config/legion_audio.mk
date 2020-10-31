@@ -1,5 +1,5 @@
 #
-# Lineage Audio Files
+# Legion Audio Files
 #
 
 ALARM_PATH := vendor/legion/prebuilt/common/media/audio/alarms

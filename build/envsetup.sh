@@ -1,25 +1,19 @@
-function __print_lineage_functions_help() {
+# LegionOS functions that extend build/envsetup.sh
+function __print_legion_functions_help() {
 cat <<EOF
-Additional LineageOS functions:
+Additional LegionOS functions:
 - cout:            Changes directory to out.
-- mmp:             Builds all of the modules in the current directory and pushes them to the device.
-- mmap:            Builds all of the modules in the current directory and its dependencies, then pushes the package to the device.
-- mmmp:            Builds all of the modules in the supplied directories and pushes them to the device.
 - lineagegerrit:   A Git wrapper that fetches/pushes patch from/to LineageOS Gerrit Review.
 - lineagerebase:   Rebase a Gerrit change and push it again.
-- lineageremote:   Add git remote for LineageOS Gerrit Review.
+- lineagereview:   Add git remote for LineageOS Gerrit Review.
 - aospremote:      Add git remote for matching AOSP repository.
 - cafremote:       Add git remote for matching CodeAurora repository.
-- githubremote:    Add git remote for LineageOS Github.
+- lineageremote:    Add git remote for LineageOS Github.
 - mka:             Builds using SCHED_BATCH on all processors.
-- mkap:            Builds the module(s) using mka and pushes them to the device.
-- cmka:            Cleans and builds using mka.
 - repodiff:        Diff 2 different branches or tags within the same repo
 - repolastsync:    Prints date and time of last repo sync.
 - reposync:        Parallel repo sync using ionice and SCHED_BATCH.
 - repopick:        Utility to fetch changes from Gerrit.
-- installboot:     Installs a boot.img to the connected device.
-- installrecovery: Installs a recovery.img to the connected device.
 EOF
 }
 
@@ -56,7 +50,7 @@ function brunch()
 {
     breakfast $*
     if [ $? -eq 0 ]; then
-        mka bacon
+        mka legion
     else
         echo "No such item in brunch menu. Try 'breakfast'"
         return 1
@@ -68,6 +62,15 @@ function breakfast()
 {
     target=$1
     local variant=$2
+    REVENGEOS_DEVICES_ONLY="true"
+    unset LUNCH_MENU_CHOICES
+    add_lunch_combo full-eng
+    for f in `/bin/ls vendor/legion/vendorsetup.sh 2> /dev/null`
+        do
+            echo "including $f"
+            . $f
+        done
+    unset f
 
     if [ $# -eq 0 ]; then
         # No arguments, so let's have the full menu
@@ -78,50 +81,18 @@ function breakfast()
             # A buildtype was specified, assume a full device name
             lunch $target
         else
-            # This is probably just the Lineage model name
+            # This is probably just the LegionOS model name
             if [ -z "$variant" ]; then
                 variant="userdebug"
             fi
 
-            lunch lineage_$target-$variant
+            lunch legion_$target-$variant
         fi
     fi
     return $?
 }
 
 alias bib=breakfast
-
-function eat()
-{
-    if [ "$OUT" ] ; then
-        ZIPPATH=`ls -tr "$OUT"/lineage-*.zip | tail -1`
-        if [ ! -f $ZIPPATH ] ; then
-            echo "Nothing to eat"
-            return 1
-        fi
-        echo "Waiting for device..."
-        adb wait-for-device-recovery
-        echo "Found device"
-        if (adb shell getprop ro.lineage.device | grep -q "$LINEAGE_BUILD"); then
-            echo "Rebooting to sideload for install"
-            adb reboot sideload-auto-reboot
-            adb wait-for-sideload
-            adb sideload $ZIPPATH
-        else
-            echo "The connected device does not appear to be $LINEAGE_BUILD, run away!"
-        fi
-        return $?
-    else
-        echo "Nothing to eat"
-        return 1
-    fi
-}
-
-function omnom()
-{
-    brunch $*
-    eat
-}
 
 function cout()
 {
@@ -232,7 +203,7 @@ function dddclient()
    fi
 }
 
-function lineageremote()
+function lineagereview()
 {
     if ! git rev-parse --git-dir &> /dev/null
     then
@@ -319,14 +290,14 @@ function cafremote()
     echo "Remote 'caf' created"
 }
 
-function githubremote()
+function lineageremote()
 {
     if ! git rev-parse --git-dir &> /dev/null
     then
         echo ".git directory not found. Please run this from the root directory of the Android repository you wish to set up."
         return 1
     fi
-    git remote rm github 2> /dev/null
+    git remote rm lineage 2> /dev/null
     local REMOTE=$(git config --get remote.aosp.projectname)
 
     if [ -z "$REMOTE" ]
@@ -336,84 +307,8 @@ function githubremote()
 
     local PROJECT=$(echo $REMOTE | sed -e "s#platform/#android/#g; s#/#_#g")
 
-    git remote add github https://github.com/LineageOS/$PROJECT
-    echo "Remote 'github' created"
-}
-
-function installboot()
-{
-    if [ ! -e "$OUT/recovery/root/system/etc/recovery.fstab" ];
-    then
-        echo "No recovery.fstab found. Build recovery first."
-        return 1
-    fi
-    if [ ! -e "$OUT/boot.img" ];
-    then
-        echo "No boot.img found. Run make bootimage first."
-        return 1
-    fi
-    PARTITION=`grep "^\/boot" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $3'}`
-    if [ -z "$PARTITION" ];
-    then
-        # Try for RECOVERY_FSTAB_VERSION = 2
-        PARTITION=`grep "[[:space:]]\/boot[[:space:]]" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $1'}`
-        PARTITION_TYPE=`grep "[[:space:]]\/boot[[:space:]]" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $3'}`
-        if [ -z "$PARTITION" ];
-        then
-            echo "Unable to determine boot partition."
-            return 1
-        fi
-    fi
-    adb wait-for-device-recovery
-    adb root
-    adb wait-for-device-recovery
-    if (adb shell getprop ro.lineage.device | grep -q "$LINEAGE_BUILD");
-    then
-        adb push $OUT/boot.img /cache/
-        adb shell dd if=/cache/boot.img of=$PARTITION
-        adb shell rm -rf /cache/boot.img
-        echo "Installation complete."
-    else
-        echo "The connected device does not appear to be $LINEAGE_BUILD, run away!"
-    fi
-}
-
-function installrecovery()
-{
-    if [ ! -e "$OUT/recovery/root/system/etc/recovery.fstab" ];
-    then
-        echo "No recovery.fstab found. Build recovery first."
-        return 1
-    fi
-    if [ ! -e "$OUT/recovery.img" ];
-    then
-        echo "No recovery.img found. Run make recoveryimage first."
-        return 1
-    fi
-    PARTITION=`grep "^\/recovery" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $3'}`
-    if [ -z "$PARTITION" ];
-    then
-        # Try for RECOVERY_FSTAB_VERSION = 2
-        PARTITION=`grep "[[:space:]]\/recovery[[:space:]]" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $1'}`
-        PARTITION_TYPE=`grep "[[:space:]]\/recovery[[:space:]]" $OUT/recovery/root/system/etc/recovery.fstab | awk {'print $3'}`
-        if [ -z "$PARTITION" ];
-        then
-            echo "Unable to determine recovery partition."
-            return 1
-        fi
-    fi
-    adb wait-for-device-recovery
-    adb root
-    adb wait-for-device-recovery
-    if (adb shell getprop ro.lineage.device | grep -q "$LINEAGE_BUILD");
-    then
-        adb push $OUT/recovery.img /cache/
-        adb shell dd if=/cache/recovery.img of=$PARTITION
-        adb shell rm -rf /cache/recovery.img
-        echo "Installation complete."
-    else
-        echo "The connected device does not appear to be $LINEAGE_BUILD, run away!"
-    fi
+    git remote add lineage https://github.com/LineageOS/$PROJECT
+    echo "Remote 'lineage' created"
 }
 
 function makerecipe() {
@@ -725,7 +620,7 @@ function cmka() {
     if [ ! -z "$1" ]; then
         for i in "$@"; do
             case $i in
-                bacon|otapackage|systemimage)
+                legion|otapackage|systemimage)
                     mka installclean
                     mka $i
                     ;;
@@ -741,6 +636,25 @@ function cmka() {
     fi
 }
 
+function fixup_common_out_dir() {
+    common_out_dir=$(get_build_var OUT_DIR)/target/common
+    target_device=$(get_build_var TARGET_DEVICE)
+        common_target_out=common-${target_device}
+    if [ ! -z $REVENGE_FIXUP_COMMON_OUT ]; then
+        if [ -d ${common_out_dir} ] && [ ! -L ${common_out_dir} ]; then
+            mv ${common_out_dir} ${common_out_dir}-${target_device}
+            ln -s ${common_target_out} ${common_out_dir}
+        else
+            [ -L ${common_out_dir} ] && rm ${common_out_dir}
+            mkdir -p ${common_out_dir}-${target_device}
+            ln -s ${common_target_out} ${common_out_dir}
+        fi
+    else
+        [ -L ${common_out_dir} ] && rm ${common_out_dir}
+        mkdir -p ${common_out_dir}
+    fi
+}
+
 function repolastsync() {
     RLSPATH="$ANDROID_BUILD_TOP/.repo/.repo_fetchtimes.json"
     RLSLOCAL=$(date -d "$(stat -c %z $RLSPATH)" +"%e %b %Y, %T %Z")
@@ -749,7 +663,7 @@ function repolastsync() {
 }
 
 function reposync() {
-    repo sync -j 4 "$@"
+    repo sync -c -f --force-sync --no-tags --no-clone-bundle -j$(nproc --all) --optimized-fetch --prune "$@"
 }
 
 function repodiff() {
@@ -764,7 +678,8 @@ function repodiff() {
 # Return success if adb is up and not in recovery
 function _adb_connected {
     {
-        if [[ "$(adb get-state)" == device ]]
+        if [[ "$(adb get-state)" == device &&
+              "$(adb shell 'test -e /sbin/recovery; echo $?')" != 0 ]]
         then
             return 0
         fi
@@ -773,172 +688,78 @@ function _adb_connected {
     return 1
 };
 
-# Credit for color strip sed: http://goo.gl/BoIcm
-function dopush()
-{
-    local func=$1
-    shift
-
-    adb start-server # Prevent unexpected starting server message from adb get-state in the next line
-    if ! _adb_connected; then
-        echo "No device is online. Waiting for one..."
-        echo "Please connect USB and/or enable USB debugging"
-        until _adb_connected; do
-            sleep 1
-        done
-        echo "Device Found."
-    fi
-
-    if (adb shell getprop ro.lineage.device | grep -q "$LINEAGE_BUILD") || [ "$FORCE_PUSH" = "true" ];
-    then
-    # retrieve IP and PORT info if we're using a TCP connection
-    TCPIPPORT=$(adb devices \
-        | egrep '^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9]):[0-9]+[^0-9]+' \
-        | head -1 | awk '{print $1}')
-    adb root &> /dev/null
-    sleep 0.3
-    if [ -n "$TCPIPPORT" ]
-    then
-        # adb root just killed our connection
-        # so reconnect...
-        adb connect "$TCPIPPORT"
-    fi
-    adb wait-for-device &> /dev/null
-    adb remount &> /dev/null
-
-    mkdir -p $OUT
-    ($func $*|tee $OUT/.log;return ${PIPESTATUS[0]})
-    ret=$?;
-    if [ $ret -ne 0 ]; then
-        rm -f $OUT/.log;return $ret
-    fi
-
-    is_gnu_sed=`sed --version | head -1 | grep -c GNU`
-
-    # Install: <file>
-    if [ $is_gnu_sed -gt 0 ]; then
-        LOC="$(cat $OUT/.log | sed -r -e 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' -e 's/^\[ {0,2}[0-9]{1,3}% [0-9]{1,6}\/[0-9]{1,6}\] +//' \
-            | grep '^Install: ' | cut -d ':' -f 2)"
-    else
-        LOC="$(cat $OUT/.log | sed -E "s/"$'\E'"\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" -E "s/^\[ {0,2}[0-9]{1,3}% [0-9]{1,6}\/[0-9]{1,6}\] +//" \
-            | grep '^Install: ' | cut -d ':' -f 2)"
-    fi
-
-    # Copy: <file>
-    if [ $is_gnu_sed -gt 0 ]; then
-        LOC="$LOC $(cat $OUT/.log | sed -r -e 's/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g' -e 's/^\[ {0,2}[0-9]{1,3}% [0-9]{1,6}\/[0-9]{1,6}\] +//' \
-            | grep '^Copy: ' | cut -d ':' -f 2)"
-    else
-        LOC="$LOC $(cat $OUT/.log | sed -E "s/"$'\E'"\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g" -E 's/^\[ {0,2}[0-9]{1,3}% [0-9]{1,6}\/[0-9]{1,6}\] +//' \
-            | grep '^Copy: ' | cut -d ':' -f 2)"
-    fi
-
-    # If any files are going to /data, push an octal file permissions reader to device
-    if [ -n "$(echo $LOC | egrep '(^|\s)/data')" ]; then
-        CHKPERM="/data/local/tmp/chkfileperm.sh"
-(
-cat <<'EOF'
-#!/system/xbin/sh
-FILE=$@
-if [ -e $FILE ]; then
-    ls -l $FILE | awk '{k=0;for(i=0;i<=8;i++)k+=((substr($1,i+2,1)~/[rwx]/)*2^(8-i));if(k)printf("%0o ",k);print}' | cut -d ' ' -f1
-fi
-EOF
-) > $OUT/.chkfileperm.sh
-        echo "Pushing file permissions checker to device"
-        adb push $OUT/.chkfileperm.sh $CHKPERM
-        adb shell chmod 755 $CHKPERM
-        rm -f $OUT/.chkfileperm.sh
-    fi
-
-    RELOUT=$(echo $OUT | sed "s#^${ANDROID_BUILD_TOP}/##")
-
-    stop_n_start=false
-    for TARGET in $(echo $LOC | tr " " "\n" | sed "s#.*${RELOUT}##" | sort | uniq); do
-        # Make sure file is in $OUT/system, $OUT/data, $OUT/odm, $OUT/oem, $OUT/product, $OUT/product_services or $OUT/vendor
-        case $TARGET in
-            /system/*|/data/*|/odm/*|/oem/*|/product/*|/product_services/*|/vendor/*)
-                # Get out file from target (i.e. /system/bin/adb)
-                FILE=$OUT$TARGET
-            ;;
-            *) continue ;;
-        esac
-
-        case $TARGET in
-            /data/*)
-                # fs_config only sets permissions and se labels for files pushed to /system
-                if [ -n "$CHKPERM" ]; then
-                    OLDPERM=$(adb shell $CHKPERM $TARGET)
-                    OLDPERM=$(echo $OLDPERM | tr -d '\r' | tr -d '\n')
-                    OLDOWN=$(adb shell ls -al $TARGET | awk '{print $2}')
-                    OLDGRP=$(adb shell ls -al $TARGET | awk '{print $3}')
-                fi
-                echo "Pushing: $TARGET"
-                adb push $FILE $TARGET
-                if [ -n "$OLDPERM" ]; then
-                    echo "Setting file permissions: $OLDPERM, $OLDOWN":"$OLDGRP"
-                    adb shell chown "$OLDOWN":"$OLDGRP" $TARGET
-                    adb shell chmod "$OLDPERM" $TARGET
-                else
-                    echo "$TARGET did not exist previously, you should set file permissions manually"
-                fi
-                adb shell restorecon "$TARGET"
-            ;;
-            /system/priv-app/SystemUI/SystemUI.apk|/system/framework/*)
-                # Only need to stop services once
-                if ! $stop_n_start; then
-                    adb shell stop
-                    stop_n_start=true
-                fi
-                echo "Pushing: $TARGET"
-                adb push $FILE $TARGET
-            ;;
-            *)
-                echo "Pushing: $TARGET"
-                adb push $FILE $TARGET
-            ;;
-        esac
-    done
-    if [ -n "$CHKPERM" ]; then
-        adb shell rm $CHKPERM
-    fi
-    if $stop_n_start; then
-        adb shell start
-    fi
-    rm -f $OUT/.log
-    return 0
-    else
-        echo "The connected device does not appear to be $LINEAGE_BUILD, run away!"
-    fi
-}
-
-alias mmp='dopush mm'
-alias mmmp='dopush mmm'
-alias mmap='dopush mma'
-alias mmmap='dopush mmma'
-alias mkap='dopush mka'
-alias cmkap='dopush cmka'
-
 function repopick() {
     T=$(gettop)
     $T/vendor/legion/build/tools/repopick.py $@
 }
 
-function fixup_common_out_dir() {
-    common_out_dir=$(get_build_var OUT_DIR)/target/common
-    target_device=$(get_build_var TARGET_DEVICE)
-    common_target_out=common-${target_device}
-    if [ ! -z $LINEAGE_FIXUP_COMMON_OUT ]; then
-        if [ -d ${common_out_dir} ] && [ ! -L ${common_out_dir} ]; then
-            mv ${common_out_dir} ${common_out_dir}-${target_device}
-            ln -s ${common_target_out} ${common_out_dir}
-        else
-            [ -L ${common_out_dir} ] && rm ${common_out_dir}
-            mkdir -p ${common_out_dir}-${target_device}
-            ln -s ${common_target_out} ${common_out_dir}
-        fi
+# check and set ccache path on envsetup
+if [ -z ${CCACHE_EXEC} ]; then
+    ccache_path=$(which ccache)
+    if [ ! -z "$ccache_path" ]; then
+        export CCACHE_EXEC="$ccache_path"
+        echo "ccache found and CCACHE_EXEC has been set to : $ccache_path"
     else
-        [ -L ${common_out_dir} ] && rm ${common_out_dir}
-        mkdir -p ${common_out_dir}
+        echo "ccache not found/installed!"
     fi
-}
+fi
+
+function push_update(){(
+    set -e
+    a=()
+    devices_dir=$(pwd)/official_devices
+
+    if [ ! -f "$(pwd)/changelog.txt" ]; then
+        echo "Create changelog.txt file in build directory"
+        echo "Aborting..."
+        return 0
+    fi
+
+    # Ask the maintainer for login details
+    read -p 'ODSN Username: ' uservar
+    read -p 'Zip name: ' zipvar
+
+    for s in $(echo $zipvar | tr "-" "\n")
+    do
+        a+=("$s")
+    done
+
+    target_device=${a[4]}
+    out_dir=$(pwd)/out/target/product/$target_device/
+    version=${a[1]}
+    size=$(stat -c%s "$out_dir$zipvar")
+    md5=$(md5sum "$out_dir$zipvar")
+
+    echo "Uploading build to ODSN"
+
+    scp $out_dir/$zipvar ${uservar}@storage.osdn.net:/storage/groups/r/re/legion/$target_device
+
+    echo "Generating json"
+
+    python3 $(pwd)/vendor/legion/build/tools/generatejson.py $target_device $zipvar $version $size $md5
+
+    if [ -d "$devices_dir" ]; then
+        rm -rf $devices_dir
+    fi
+
+    git clone https://github.com/LegionOS-Devices/official_devices.git $devices_dir
+
+    if [ -d "$devices_dir/$target_device" ]; then
+        mv $(pwd)/device.json $devices_dir/$target_device
+        mv $(pwd)/changelog.txt $devices_dir/$target_device
+    else
+        mkdir $devices_dir/$target_device
+        mv $(pwd)/device.json $devices_dir/$target_device
+        mv $(pwd)/changelog.txt $devices_dir/$target_device
+    fi
+
+    echo "Pushing to Official devices"
+
+    cd $devices_dir
+    git add $target_device && git commit -m "Update $target_device"
+    git push https://github.com/LegionOS-Devices/official_devices.git HEAD:11
+    rm -rf $devices_dir
+)}
+
+# Allow GCC 4.9
+export TEMPORARY_DISABLE_PATH_RESTRICTIONS=true

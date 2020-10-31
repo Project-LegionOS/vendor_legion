@@ -1,4 +1,4 @@
-# Inherit full common Lineage stuff
+# Inherit full common Legion stuff
 $(call inherit-product, vendor/legion/config/common_full.mk)
 
 # Required packages
