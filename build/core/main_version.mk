@@ -6,20 +6,13 @@ endif
 
 # LegionOS System Version
 ADDITIONAL_BUILD_PROPERTIES += \
+    ro.legion.buildtype=$(LEGION_BUILD_TYPE) \
+    ro.legion.build.date=$(LEGION_BUILD_DATE) \
+    ro.legion.display.version=$(LEGION_DISPLAY_VERSION) \
+    ro.legion.android_version=$(ANDROID_VERSION) \
+    ro.legion.releasetype=$(LEGION_BUILD_TYPE) \
+    ro.legionversion=$(LEGIONVERSION) \
     ro.legion.version=$(LEGION_VERSION) \
-    ro.legion.releasetype=$(LEGION_BUILDTYPE) \
-    ro.legion.build.version=$(PRODUCT_VERSION_MAJOR).$(PRODUCT_VERSION_MINOR) \
-    ro.modversion=$(LEGION_VERSION) \
-    ro.legionlegal.url=https://legionos.org/legal
-
-# LegionOS Platform Display Version
-ADDITIONAL_BUILD_PROPERTIES += \
-    ro.legion.display.version=$(LEGION_DISPLAY_VERSION)
-
-# LegionOS Platform SDK Version
-ADDITIONAL_BUILD_PROPERTIES += \
-    ro.legion.build.version.plat.sdk=$(LEGION_PLATFORM_SDK_VERSION)
-
-# LegionOS Platform Internal Version
-ADDITIONAL_BUILD_PROPERTIES += \
-    ro.legion.build.version.plat.rev=$(LEGION_PLATFORM_REV)
+    ro.modversion=$(LEGION_MOD_VERSION) \
+    ro.legion.ziptype=$(LEGION_BUILD_ZIP_TYPE) \
+    org.legion.fingerprint=$(LEGION_FINGERPRINT)
