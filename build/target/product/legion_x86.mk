@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$(call inherit-product, build/target/product/aosp_arm.mk)
+$(call inherit-product, build/target/product/aosp_x86.mk)
 
-include vendor/lineage/build/target/product/lineage_generic_target.mk
+include vendor/legion/build/target/product/legion_generic_target.mk
 
-TARGET_NO_KERNEL_OVERRIDE := true
 TARGET_USES_64_BIT_BINDER := true
 
-PRODUCT_NAME := lineage_arm
+PRODUCT_NAME := legion_x86
+
+PRODUCT_SDK_ADDON_NAME := legion
+PRODUCT_SDK_ADDON_SYS_IMG_SOURCE_PROP := $(LOCAL_PATH)/source.properties
