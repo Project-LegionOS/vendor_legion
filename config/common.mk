@@ -20,8 +20,8 @@ endif
 
 # Backup Tool
 PRODUCT_COPY_FILES += \
-    vendor/legion/prebuilt/common/bin/backuptool.sh:$(TARGET_COPY_OUT_SYSTEM)/install/bin/backuptool.sh \
-    vendor/legion/prebuilt/common/bin/backuptool.functions:$(TARGET_COPY_OUT_SYSTEM)/install/bin/backuptool.functions \
+    vendor/legion/prebuilt/common/bin/backuptool.sh:install/bin/backuptool.sh \
+    vendor/legion/prebuilt/common/bin/backuptool.functions:install/bin/backuptool.functions \
     vendor/legion/prebuilt/common/bin/50-legion.sh:$(TARGET_COPY_OUT_SYSTEM)/addon.d/50-legion.sh
 
 ifneq ($(AB_OTA_PARTITIONS),)
