@@ -177,7 +177,7 @@ PRODUCT_ENFORCE_RRO_EXCLUDED_OVERLAYS += vendor/legion/overlay
 DEVICE_PACKAGE_OVERLAYS += vendor/legion/overlay/common
 
 # Inherit Faceunlock
-$(call inherit-product-if-exists, external/motorola/faceunlock/config.mk)
+-include external/motorola/faceunlock/config.mk)
 
 -include $(WORKSPACE)/build_env/image-auto-bits.mk
 -include vendor/legion/config/partner_gms.mk
