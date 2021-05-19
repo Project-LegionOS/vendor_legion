@@ -15,7 +15,8 @@ read -r -p $'\n\e[36mEnter your username:(without@) : \e[0m' username
 	▪️ *Security Patch* : ${patch_date}
 	▪️ *Android Version* : 11
 	▪️ *Download* : [HERE](https://legionos.org)
-	
+	(Builds may take upto 30mins to show up.... until then it will show error in OTA and site...please bare with us)
+
 	▪️ *By*: @${username}
 	▪️ *Support* : [ROM](https://t.me/legionos)
 	
