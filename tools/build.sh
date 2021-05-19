@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# Authored By : @https://tm.t/Immanuel_Raj
+
 DEVICE=$1
 DECISION=$2
 . build/envsetup.sh

@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# Authored By : jhenrique
 
 cmd=$(git log --oneline --after=$After_Date --until=$Until_Date)
 repo_url=$(git config --get "remote.$(echo $REPO_REMOTE).url") ;

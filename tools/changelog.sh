@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env bash
+# Authored By : jhenrique
 
 export Changelog=$PWD/Changelog.txt
 
